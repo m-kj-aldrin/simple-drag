@@ -76,14 +76,6 @@ function dragEnd(e) {
  */
 export function draggable(target, drag_el = target) {
   drag_el.draggable = true;
-  // drag_el.onpointerdown = (e) => {
-  //   if (e.currentTarget == e.target) {
-  //     drag_el.draggable = true;
-  //   } else {
-  //     drag_el.draggable = false;
-  //   }
-  // };
-  // drag_el.onpointerup = () => (drag_el.draggable = true);
 
   target.addEventListener("dragstart", dragStart);
   target.addEventListener("dragend", dragEnd);
