@@ -1,26 +1,39 @@
-import { DraggableEvent, dragZone, draggable } from "../drag.js";
+import { DraggableEvent, drag_zone, draggable } from "../drag.js";
 
-let draggable_elements = [...Array(8)].map((_, i) => {
-  let el = document.createElement("li");
-  el.textContent = `draggable idx: ${i}`;
+function init_elements(text, n = 4) {
+  let draggable_elements = [...Array(n)].map((_, i) => {
+    let el = document.createElement("li");
+    el.textContent = `${text} idx: ${i}`;
 
-  draggable(el);
+    draggable(el);
 
-  return el;
-});
+    return el;
+  });
 
-let drag_zone_element = document.createElement("ul");
-dragZone(drag_zone_element);
+  return draggable_elements;
+}
 
-drag_zone_element.addEventListener(
-  "draggable-enter",
-  /**@param {DraggableEvent} e */
-  (e) => {
-    let { closest, dragged } = e.data;
-    drag_zone_element.insertBefore(dragged, closest);
-  }
-);
+/**@param {DraggableEvent<"enter">} e */
+function insert_handler(e) {
+  let { closest, dragged } = e.data;
+  e.currentTarget.insertBefore(dragged, closest);
+}
 
-drag_zone_element.append(...draggable_elements);
+/**@param {DraggableEvent<"finish">} e */
+function finish_handler(e) {
+  console.log("finish", e.target, e.currentTarget);
+}
 
-document.body.appendChild(drag_zone_element);
+let drag_zone_element0 = drag_zone(document.createElement("ul"));
+let drag_zone_element1 = drag_zone(document.createElement("ul"));
+
+drag_zone_element0.addEventListener("draggable-enter", insert_handler);
+drag_zone_element0.addEventListener("draggable-finish", finish_handler);
+
+drag_zone_element1.addEventListener("draggable-enter", insert_handler);
+drag_zone_element1.addEventListener("draggable-finish", finish_handler);
+
+drag_zone_element0.append(...init_elements("list 0", 3));
+drag_zone_element1.append(...init_elements("list 1", 5));
+
+document.body.append(drag_zone_element0, drag_zone_element1);

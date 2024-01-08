@@ -6,25 +6,45 @@
 
 /**
  * @typedef {Object} DragData
- * @property {HTMLElement} dragged
- * @property {HTMLElement} closest
+ * @property {HTMLElement} [dragged]
+ * @property {HTMLElement} [closest]
  */
 
+/**
+ * @template {"enter" | "finish"} T
+ */
 export class DraggableEvent extends Event {
-  /**@type {DragData} */
+  /**@type {T extends "enter" ? DragData : undefined} */
   #data;
 
   /**
-   * @param {"enter"} type
+   * @param {T} type
    * @param {DragData} data
    */
   constructor(type, data) {
-    super(`draggable-${type}`, {});
+    super(`draggable-${type}`, {
+      bubbles: type == "finish",
+    });
     this.#data = data;
   }
 
   get data() {
     return this.#data;
+  }
+
+  /**@type {T} */
+  get type() {
+    return super.type;
+  }
+
+  /**@type {HTMLElement} */
+  get target() {
+    return super.target;
+  }
+
+  /**@type {HTMLElement} */
+  get currentTarget() {
+    return super.currentTarget;
   }
 }
 
@@ -46,6 +66,8 @@ function dragEnd(e) {
   e.currentTarget.removeAttribute("data-dragged");
   document.documentElement.classList.remove(e.currentTarget.tagName);
   document.documentElement.removeAttribute("data-dragging");
+
+  e.currentTarget.dispatchEvent(new DraggableEvent("finish", {}));
 }
 
 /**
@@ -54,14 +76,14 @@ function dragEnd(e) {
  */
 export function draggable(target, drag_el = target) {
   drag_el.draggable = true;
-  drag_el.onpointerdown = (e) => {
-    if (e.currentTarget == e.target) {
-      drag_el.draggable = true;
-    } else {
-      drag_el.draggable = false;
-    }
-  };
-  drag_el.onpointerup = () => (drag_el.draggable = true);
+  // drag_el.onpointerdown = (e) => {
+  //   if (e.currentTarget == e.target) {
+  //     drag_el.draggable = true;
+  //   } else {
+  //     drag_el.draggable = false;
+  //   }
+  // };
+  // drag_el.onpointerup = () => (drag_el.draggable = true);
 
   target.addEventListener("dragstart", dragStart);
   target.addEventListener("dragend", dragEnd);
@@ -125,8 +147,12 @@ function dragOver(e) {
 /**
  * @template {HTMLElement} T
  * @param {T} target
+ * @returns {import("./types").HTMLDragZoneElement<T>}
  */
-export function dragZone(target) {
-  target.addEventListener("dragover", dragOver.bind({}));
+export function drag_zone(target) {
+  if (!target?._drag_zone) {
+    target.addEventListener("dragover", dragOver);
+    target._drag_zone = true;
+  }
   return target;
 }
