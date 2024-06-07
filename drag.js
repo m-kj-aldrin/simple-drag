@@ -1,150 +1,230 @@
 /**
- * @typedef {Object} HTMLTarget
+ * @param {NodeListOf<HTMLElement> | HTMLCollectionOf<HTMLElement>} children
+ * @param {number} y
+ */
+function getClosest(children, y) {
+    let closestElement = null;
+    let closestoffsetY = Number.NEGATIVE_INFINITY;
+
+    for (const child of children) {
+        const childBox = child.getBoundingClientRect();
+        const offsetY = y - childBox.top - childBox.height / 2;
+
+        if (offsetY < 0 && offsetY > closestoffsetY) {
+            closestElement = child;
+            closestoffsetY = offsetY;
+        }
+    }
+
+    return closestElement;
+}
+
+/**
+ * @typedef {Object} HTMLTargetCurrentTarget
  * @property {HTMLElement} target
  * @property {HTMLElement} currentTarget
  */
 
 /**
  * @typedef {Object} DragData
- * @property {HTMLElement} [dragged]
- * @property {HTMLElement} [closest]
+ * @property {HTMLElement} dragged
+ * @property {HTMLElement | null} closest
+ * @property {HTMLElement} fromZone
+ * @property {HTMLElement} toZone
  */
 
-/**
- * @template {"enter" | "finish"} T
- */
-export class DraggableEvent extends Event {
-  /**@type {T extends "enter" ? DragData : undefined} */
-  #data;
+export class DragStartEvent extends Event {
+    /**@type {HTMLElement} */
+    #startZone;
 
-  /**
-   * @param {T} type
-   * @param {DragData} data
-   */
-  constructor(type, data) {
-    super(`draggable-${type}`, {
-      bubbles: type == "finish",
-    });
-    this.#data = data;
-  }
-
-  get data() {
-    return this.#data;
-  }
-
-  /**@type {T} */
-  get type() {
-    return super.type;
-  }
-
-  /**@type {HTMLElement} */
-  get target() {
-    return super.target;
-  }
-
-  /**@type {HTMLElement} */
-  get currentTarget() {
-    return super.currentTarget;
-  }
-}
-
-/**
- * @template {DragEvent | InputEvent | MouseEvent} T
- * @typedef {T & HTMLTarget} HTMLEvent
- */
-
-/**@param {HTMLEvent<DragEvent>} e */
-function dragStart(e) {
-  if (e.currentTarget != e.target) return;
-  e.currentTarget.setAttribute("data-dragged", "true");
-  document.documentElement.classList.add(e.currentTarget.tagName);
-  document.documentElement.setAttribute("data-dragging", "true");
-}
-
-/**@param {HTMLEvent<DragEvent>} e */
-function dragEnd(e) {
-  e.currentTarget.removeAttribute("data-dragged");
-  document.documentElement.classList.remove(e.currentTarget.tagName);
-  document.documentElement.removeAttribute("data-dragging");
-
-  e.currentTarget.dispatchEvent(new DraggableEvent("finish", {}));
-}
-
-/**
- * @template {HTMLElement} T
- * @param {T} target
- */
-export function draggable(target, drag_el = target) {
-  drag_el.draggable = true;
-
-  target.addEventListener("dragstart", dragStart);
-  target.addEventListener("dragend", dragEnd);
-
-  return target;
-}
-
-/**
- * @param {NodeListOf<HTMLElement> | HTMLCollectionOf<HTMLElement>} children
- * @param {number} y
- */
-function getClosest(children, y) {
-  let closestElement = null;
-  let closestoffsetY = Number.NEGATIVE_INFINITY;
-
-  for (const child of children) {
-    const childBox = child.getBoundingClientRect();
-    const offsetY = y - childBox.top - childBox.height / 2;
-
-    if (offsetY < 0 && offsetY > closestoffsetY) {
-      closestElement = child;
-      closestoffsetY = offsetY;
+    /**@param {{startZone:HTMLElement}} o */
+    constructor({ startZone }) {
+        super("draggable-start", { bubbles: true });
+        this.#startZone = startZone;
     }
-  }
 
-  return closestElement;
+    get startZone() {
+        return this.#startZone;
+    }
 }
 
+export class DragEnterEvent extends Event {
+    /**@type {HTMLElement | null} */
+    #closest;
+    /**@type {HTMLElement} */
+    #dragged;
+
+    /**@type {HTMLElement} */
+    #fromZone;
+    /**@type {HTMLElement} */
+    #toZone;
+
+    /**@param {DragData} data */
+    constructor({ closest, dragged, fromZone, toZone }) {
+        super("draggable-enter", { bubbles: true });
+
+        this.#dragged = dragged;
+        this.#closest = closest;
+        this.#fromZone = fromZone;
+        this.#toZone = toZone;
+    }
+
+    get closest() {
+        return this.#closest;
+    }
+    get dragged() {
+        return this.#dragged;
+    }
+    get fromZone() {
+        return this.#fromZone;
+    }
+    get toZone() {
+        return this.#toZone;
+    }
+}
+
+export class DragFinishEvent extends Event {
+    /**@type {HTMLElement} */
+    #endZone;
+
+    /**@param {{endZone:HTMLElement}} o */
+    constructor({ endZone }) {
+        super("draggable-finish", {
+            bubbles: true,
+        });
+
+        this.#endZone = endZone;
+    }
+
+    get endZone() {
+        return this.#endZone;
+    }
+}
+
+/**@typedef {HTMLTargetCurrentTarget & DragEvent} HTMLDragEvent */
+
+const draggableBrand = Symbol("draggable-brand");
+
 /**
- * @param {HTMLEvent<DragEvent> & {currentTarget:HTMLElement}} e
+ * Sets a element as a draggable
+ * @param {HTMLElement} target element that should be draggable
+ * @returns {()=>void} remove draggable from element
  */
-function dragOver(e) {
-  e.preventDefault();
+export function draggable(target) {
+    if (target[draggableBrand]?.draggable) {
+        return;
+    }
 
-  let to_zone = e.currentTarget;
+    target.draggable = true;
+    target[draggableBrand] = { ...target[draggableBrand], draggable: true };
 
-  /**@type {HTMLElement} */
-  const dragged = document.querySelector("[data-dragged='true']");
-
-  /**@type {NodeListOf<HTMLElement>} */
-  const children = to_zone.querySelectorAll(
-    `:scope > [draggable]:not([data-dragged="true"])`
-  );
-
-  let closest = getClosest(children, e.clientY);
-
-  const from_zone = dragged.parentElement;
-  if (!from_zone) return;
-  if (!to_zone) return;
-
-  if (closest == null) {
-    if (dragged == to_zone.lastElementChild) return;
-    to_zone.dispatchEvent(new DraggableEvent("enter", { closest, dragged }));
-  } else {
-    let next_siblings = to_zone.querySelectorAll("[data-dragged='true'] ~ *");
-    if (next_siblings[0] == closest) return;
-    to_zone.dispatchEvent(new DraggableEvent("enter", { closest, dragged }));
-  }
+    return () => {
+        target.draggable = false;
+        target[draggableBrand].draggable = false;
+    };
 }
 
 /**
+ *
+ * @param {HTMLTargetCurrentTarget & DragEvent} e
+ */
+function zoneDragStart(e) {
+    let startZone = e.currentTarget;
+
+    if (!e.target[draggableBrand]?.draggable) return;
+
+    e.target.setAttribute("data-dragged", "true");
+    document.documentElement.classList.add(e.currentTarget.tagName);
+    document.documentElement.setAttribute("data-dragging", "true");
+
+    e.target.dispatchEvent(new DragStartEvent({ startZone }));
+}
+
+/**
+ *
+ * @param {HTMLTargetCurrentTarget & DragEvent} e
+ */
+function zoneDragEnd(e) {
+    let endZone = e.currentTarget;
+
+    if (!e.target[draggableBrand]?.draggable) return;
+
+    e.target.removeAttribute("data-dragged");
+    document.documentElement.classList.remove(e.currentTarget.tagName);
+    document.documentElement.removeAttribute("data-dragging");
+
+    e.target.dispatchEvent(new DragFinishEvent({ endZone }));
+}
+
+/**
+ * @param {HTMLTargetCurrentTarget & DragEvent} e
+ */
+function zoneDragOver(e) {
+    e.preventDefault();
+
+    /**@type {HTMLElement} */
+    const dragged = document.querySelector("[draggable][data-dragged='true']");
+    if (!dragged) return;
+
+    const toZone = e.currentTarget;
+    const fromZone = dragged.parentElement;
+
+    if (!fromZone[draggableBrand]?.draggableZone) return;
+    if (!toZone[draggableBrand]?.draggableZone) return;
+
+    /**@type {NodeListOf<HTMLElement>} */
+    const children = toZone.querySelectorAll(
+        `:scope > [draggable]:not([data-dragged="true"])`
+    );
+
+    let closest = getClosest(children, e.clientY);
+
+    if (closest == null) {
+        if (dragged == toZone.lastElementChild) return;
+        toZone.dispatchEvent(
+            new DragEnterEvent({ closest, dragged, fromZone, toZone })
+        );
+    } else {
+        let next_siblings = toZone.querySelectorAll(
+            "[data-dragged='true'] ~ *"
+        );
+        if (next_siblings[0] == closest) return;
+        toZone.dispatchEvent(
+            new DragEnterEvent({ closest, dragged, fromZone, toZone })
+        );
+    }
+}
+
+/**
+ * Sets target as a dragzone, draggable elements inside the zone will trigger DraggableStart,DraggableEneter,DraggableFinish events
  * @template {HTMLElement} T
  * @param {T} target
- * @returns {import("./types").HTMLDragZoneElement<T>}
+ * @returns {[T,()=>void | void]} cleanup function, removes the zone
  */
-export function drag_zone(target) {
-  if (!target?._drag_zone) {
-    target.addEventListener("dragover", dragOver);
-    target._drag_zone = true;
-  }
-  return target;
+export function dragZone(target) {
+    if (!target[draggableBrand]?.draggableZone) {
+        let controller = new AbortController();
+
+        target.addEventListener("dragover", zoneDragOver, {
+            signal: controller.signal,
+        });
+        target.addEventListener("dragstart", zoneDragStart, {
+            signal: controller.signal,
+        });
+        target.addEventListener("dragend", zoneDragEnd, {
+            signal: controller.signal,
+        });
+        target[draggableBrand] = {
+            ...target[draggableBrand],
+            draggableZone: true,
+        };
+        return [
+            target,
+            () => {
+                controller.abort();
+                target[draggableBrand].draggableZone = false;
+            },
+        ];
+    }
+    return [target, undefined];
 }
