@@ -214,10 +214,12 @@ export function dragZone(target) {
         target.addEventListener("dragend", zoneDragEnd, {
             signal: controller.signal,
         });
+
         target[draggableBrand] = {
             ...target[draggableBrand],
             draggableZone: true,
         };
+
         return [
             target,
             () => {
@@ -226,5 +228,6 @@ export function dragZone(target) {
             },
         ];
     }
+
     return [target, undefined];
 }
