@@ -28,10 +28,12 @@ export function dragZone<T extends DraggableElement>(target: T): [T, () => void]
  * @property {DraggableElement} toZone
  */
 export class DragStartEvent extends Event {
-    /**@param {{startZone:DraggableElement}} o */
-    constructor({ startZone }: {
+    /**@param {{startZone:DraggableElement,dragged:DraggableElement}} o */
+    constructor({ startZone, dragged }: {
         startZone: DraggableElement;
+        dragged: DraggableElement;
     });
+    get dragged(): DraggableElement;
     get startZone(): DraggableElement;
     #private;
 }
@@ -45,10 +47,12 @@ export class DragEnterEvent extends Event {
     #private;
 }
 export class DragFinishEvent extends Event {
-    /**@param {{endZone:DraggableElement}} o */
-    constructor({ endZone }: {
+    /**@param {{endZone:DraggableElement,dragged:DraggableElement}} o */
+    constructor({ endZone, dragged }: {
         endZone: DraggableElement;
+        dragged: DraggableElement;
     });
+    get dragged(): DraggableElement;
     get endZone(): DraggableElement;
     #private;
 }

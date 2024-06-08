@@ -153,13 +153,13 @@ function zoneDragStart(e) {
   let startZone = this;
 
   /**@type {DraggableElement} */ // @ts-ignore
-  const target = e.target;
-  if (!target[draggableBrand]?.draggable) return;
+  const dragged = e.target;
+  if (!dragged[draggableBrand]?.draggable) return;
 
-  target.setAttribute("data-dragged", "true");
+  dragged.setAttribute("data-dragged", "true");
   document.documentElement.setAttribute("data-dragging", "true");
 
-  target.dispatchEvent(new DragStartEvent({ startZone }));
+  dragged.dispatchEvent(new DragStartEvent({ startZone, dragged }));
 }
 
 /**
@@ -170,15 +170,15 @@ function zoneDragStart(e) {
 function zoneDragEnd(e) {
   let endZone = this;
   /**@type {DraggableElement} */ // @ts-ignore
-  const target = e.target;
-  if (!target[draggableBrand]?.draggable) return;
+  const dragged = e.target;
+  if (!dragged[draggableBrand]?.draggable) return;
 
-  if (!target?.draggable) return;
+  if (!dragged?.draggable) return;
 
-  target.removeAttribute("data-dragged");
+  dragged.removeAttribute("data-dragged");
   document.documentElement.removeAttribute("data-dragging");
 
-  target.dispatchEvent(new DragFinishEvent({ endZone }));
+  dragged.dispatchEvent(new DragFinishEvent({ endZone, dragged }));
 }
 
 /**
