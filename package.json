@@ -1,0 +1,25 @@
+{
+  "license": "ISC",
+  "author": "mkja",
+  "name": "@mkja/draggable",
+  "version": "0.0.1",
+  "description": "",
+  "main": "dist/index.js",
+  "types": "types/index.d.ts",
+  "type": "module",
+  "files": [
+    "dist",
+    "types"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build && tsc"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5",
+    "vite": "^5.2.12"
+  }
+}

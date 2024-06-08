@@ -1,22 +1,22 @@
 import {
-    DragEnterEvent,
-    DragFinishEvent,
-    DragStartEvent,
-    dragZone,
-    draggable,
-} from "../drag.js";
+  DragEnterEvent,
+  DragFinishEvent,
+  DragStartEvent,
+  dragZone,
+  draggable,
+} from "../src/index.js";
 
 function initDraggableElements(text, n = 4) {
-    let draggable_elements = [...Array(n)].map((_, i) => {
-        let el = document.createElement("li");
-        el.textContent = `${text} idx: ${i}`;
+  let draggable_elements = [...Array(n)].map((_, i) => {
+    let el = document.createElement("li");
+    el.textContent = `${text} idx: ${i}`;
 
-        let cleanup = draggable(el);
+    let cleanup = draggable(el);
 
-        return el;
-    });
+    return el;
+  });
 
-    return draggable_elements;
+  return draggable_elements;
 }
 
 /**@type {HTMLElement} */
@@ -26,45 +26,45 @@ let sessionEndZone;
 
 /**@param {DragStartEvent} e */
 function startHandler(e) {
-    let startZone = e.startZone;
-    let dragged = e.target;
+  let startZone = e.startZone;
+  let dragged = e.target;
 
-    console.log("start");
-    console.log("dragged element: ", dragged);
-    console.log("started at: ", startZone);
-    console.log("\n");
+  console.log("start");
+  console.log("dragged element: ", dragged);
+  console.log("started at: ", startZone);
+  console.log("\n");
 
-    sessionStartZone = startZone;
+  sessionStartZone = startZone;
 }
 
 /**@param {DragEnterEvent} e */
 function insertHandler(e) {
-    let dragged = e.dragged;
-    let closest = e.closest;
-    let fromZone = e.fromZone;
-    let toZone = e.toZone;
+  let dragged = e.dragged;
+  let closest = e.closest;
+  let fromZone = e.fromZone;
+  let toZone = e.toZone;
 
-    console.log("enter");
-    console.log("dragged element: ", dragged);
-    console.log("dragged from: ", fromZone);
-    console.log("dragged to: ", toZone);
-    console.log("\n");
+  console.log("enter");
+  console.log("dragged element: ", dragged);
+  console.log("dragged from: ", fromZone);
+  console.log("dragged to: ", toZone);
+  console.log("\n");
 
-    toZone.insertBefore(dragged, closest);
+  toZone.insertBefore(dragged, closest);
 }
 
 /**@param {DragFinishEvent} e */
 function finishHandler(e) {
-    let endZone = e.endZone;
-    let dragged = e.target;
+  let endZone = e.endZone;
+  let dragged = e.target;
 
-    sessionEndZone = endZone;
+  sessionEndZone = endZone;
 
-    console.log("finish");
-    console.log("dragged element: ", dragged);
-    console.log("drag started at: ", sessionStartZone);
-    console.log("drag ended at: ", sessionEndZone);
-    console.log("\n");
+  console.log("finish");
+  console.log("dragged element: ", dragged);
+  console.log("drag started at: ", sessionStartZone);
+  console.log("drag ended at: ", sessionEndZone);
+  console.log("\n");
 }
 
 let [zone0, cleanUp0] = dragZone(document.createElement("ul"));
