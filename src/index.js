@@ -36,11 +36,18 @@ function getClosest(children, y) {
 export class DragStartEvent extends Event {
   /**@type {DraggableElement} */
   #startZone;
+  /**@type {DraggableElement} */
+  #dragged;
 
-  /**@param {{startZone:DraggableElement}} o */
-  constructor({ startZone }) {
+  /**@param {{startZone:DraggableElement,dragged:DraggableElement}} o */
+  constructor({ startZone, dragged }) {
     super("draggable-start", { bubbles: true });
     this.#startZone = startZone;
+    this.#dragged = dragged;
+  }
+
+  get dragged() {
+    return this.#dragged;
   }
 
   get startZone() {
@@ -86,14 +93,21 @@ export class DragEnterEvent extends Event {
 export class DragFinishEvent extends Event {
   /**@type {DraggableElement} */
   #endZone;
+  /**@type {DraggableElement} */
+  #dragged;
 
-  /**@param {{endZone:DraggableElement}} o */
-  constructor({ endZone }) {
+  /**@param {{endZone:DraggableElement,dragged:DraggableElement}} o */
+  constructor({ endZone, dragged }) {
     super("draggable-finish", {
       bubbles: true,
     });
 
     this.#endZone = endZone;
+    this.#dragged = dragged;
+  }
+
+  get dragged() {
+    return this.#dragged;
   }
 
   get endZone() {

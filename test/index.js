@@ -27,7 +27,7 @@ let sessionEndZone;
 /**@param {DragStartEvent} e */
 function startHandler(e) {
   let startZone = e.startZone;
-  let dragged = e.target;
+  let dragged = e.dragged;
 
   console.log("start");
   console.log("dragged element: ", dragged);
@@ -56,7 +56,7 @@ function insertHandler(e) {
 /**@param {DragFinishEvent} e */
 function finishHandler(e) {
   let endZone = e.endZone;
-  let dragged = e.target;
+  let dragged = e.dragged;
 
   sessionEndZone = endZone;
 
