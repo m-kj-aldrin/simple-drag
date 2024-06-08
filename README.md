@@ -1,59 +1,59 @@
 # Draggable
 
-Is a library that exports a `draggable` and `dragZone` function that adds drag & drop functionality to HTML elements. The library does not implement any logic to rearange the DOM or a data, instead emits DragStartEvent,DragEnterEvent,DragFinishEvent containing the relevant DOM elements to implement a drag & drop program.
+Is a library that exports a `draggable` and `dragZone` function. The library does not implement any logic to manipulate the DOM, instead the drag zones emit event when draggable elements is dragged. The emitted `DragStartEvent`, `DragEnterEvent`, `DragFinishEvent` contains the relevant DOM elements to implement a drag & drop program.
 
 ```javascript
 import {
-    DragEnterEvent,
-    DragFinishEvent,
-    DragStartEvent,
-    dragZone,
-    draggable,
-} from "../drag.js";
+  DragEnterEvent,
+  DragFinishEvent,
+  DragStartEvent,
+  dragZone,
+  draggable,
+} from "@mkja/draggable";
 
 let sessionStartZone, sessionEndZone;
 
 /**@param {DragStartEvent} e */
 function startHandler(e) {
-    let startZone = e.startZone;
-    let dragged = e.target;
+  let startZone = e.startZone;
+  let dragged = e.target;
 
-    console.log("start");
-    console.log("dragged element: ", dragged);
-    console.log("started at: ", startZone);
-    console.log("\n");
+  console.log("start");
+  console.log("dragged element: ", dragged);
+  console.log("started at: ", startZone);
+  console.log("\n");
 
-    sessionStartZone = startZone;
+  sessionStartZone = startZone;
 }
 
 /**@param {DragEnterEvent} e */
 function insertHandler(e) {
-    let dragged = e.dragged;
-    let closest = e.closest;
-    let fromZone = e.fromZone;
-    let toZone = e.toZone;
+  let dragged = e.dragged;
+  let closest = e.closest;
+  let fromZone = e.fromZone;
+  let toZone = e.toZone;
 
-    console.log("enter");
-    console.log("dragged element: ", dragged);
-    console.log("dragged from: ", fromZone);
-    console.log("dragged to: ", toZone);
-    console.log("\n");
+  console.log("enter");
+  console.log("dragged element: ", dragged);
+  console.log("dragged from: ", fromZone);
+  console.log("dragged to: ", toZone);
+  console.log("\n");
 
-    toZone.insertBefore(dragged, closest);
+  toZone.insertBefore(dragged, closest);
 }
 
 /**@param {DragFinishEvent} e */
 function finishHandler(e) {
-    let endZone = e.endZone;
-    let dragged = e.target;
+  let endZone = e.endZone;
+  let dragged = e.target;
 
-    sessionEndZone = endZone;
+  sessionEndZone = endZone;
 
-    console.log("finish");
-    console.log("dragged element: ", dragged);
-    console.log("drag started at: ", sessionStartZone);
-    console.log("drag ended at: ", sessionEndZone);
-    console.log("\n");
+  console.log("finish");
+  console.log("dragged element: ", dragged);
+  console.log("drag started at: ", sessionStartZone);
+  console.log("drag ended at: ", sessionEndZone);
+  console.log("\n");
 }
 
 //dragZone returns targed element and a cleanup function to remove listeners
