@@ -5,11 +5,11 @@
   "version": "0.0.13",
   "description": "",
   "main": "dist/index.js",
-  "types": "types/index.d.ts",
+  "types": "types/entry.d.ts",
   "type": "module",
   "exports": {
     ".": {
-      "types": "./types/index.d.ts",
+      "types": "./types/entry.d.ts",
       "import": "./dist/index.js"
     }
   },
