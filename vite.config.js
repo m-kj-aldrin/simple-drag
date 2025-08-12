@@ -5,10 +5,13 @@ export default defineConfig({
   build: {
     lib: {
       entry: resolve(__dirname, "src/index.js"),
-      name: "buckets",
-      fileName: () => "index.js", // Ensures the output file is always named index.js
-      formats: ["es"], // Output only the ES module format
+      name: "draggable",
+      fileName: "index",
+      formats: ["es"],
     },
+    sourcemap: true,
+    minify: "esbuild",
+    emptyOutDir: true,
     rollupOptions: {
       // Externalize dependencies that shouldn't be bundled
       external: [],

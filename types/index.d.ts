@@ -9,7 +9,7 @@
  */
 export function draggable(target: DraggableElement): (() => void) | void;
 /**
- * Sets target as a dragzone, draggable elements inside the zone will trigger DraggableStart,DraggableEneter,DraggableFinish events
+ * Sets target as a dragzone, draggable elements inside the zone will trigger DraggableStart,DraggableEnter,DraggableFinish events
  * @template {DraggableElement} T
  * @param {T} target
  * @returns {[T,()=>void] | [T,undefined]} cleanup function, removes the zone

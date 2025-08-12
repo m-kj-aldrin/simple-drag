@@ -41,7 +41,7 @@ export class DragStartEvent extends Event {
 
   /**@param {{startZone:DraggableElement,dragged:DraggableElement}} o */
   constructor({ startZone, dragged }) {
-    super("draggable-start", { bubbles: true });
+    super("draggable-start", { bubbles: true, composed: true });
     this.#startZone = startZone;
     this.#dragged = dragged;
   }
@@ -68,7 +68,7 @@ export class DragEnterEvent extends Event {
 
   /**@param {DragData} data */
   constructor({ closest, dragged, fromZone, toZone }) {
-    super("draggable-enter", { bubbles: true });
+    super("draggable-enter", { bubbles: true, composed: true });
 
     this.#dragged = dragged;
     this.#closest = closest;
@@ -100,6 +100,7 @@ export class DragFinishEvent extends Event {
   constructor({ endZone, dragged }) {
     super("draggable-finish", {
       bubbles: true,
+      composed: true,
     });
 
     this.#endZone = endZone;
@@ -156,6 +157,10 @@ function zoneDragStart(e) {
   const dragged = e.target;
   if (!dragged[draggableBrand]?.draggable) return;
 
+  // Improve cross-browser DnD (e.g., Firefox requires dataTransfer payload)
+  e.dataTransfer?.setData("text/plain", "");
+  if (e.dataTransfer) e.dataTransfer.effectAllowed = "move";
+
   dragged.setAttribute("data-dragged", "true");
   document.documentElement.setAttribute("data-dragging", "true");
 
@@ -178,6 +183,13 @@ function zoneDragEnd(e) {
   dragged.removeAttribute("data-dragged");
   document.documentElement.removeAttribute("data-dragging");
 
+  // Clear per-zone cached insertion metadata
+  const zoneMeta = /** @type {any} */ (this)[draggableBrand];
+  if (zoneMeta) {
+    delete zoneMeta.lastClosest;
+    delete zoneMeta.lastFrom;
+  }
+
   dragged.dispatchEvent(new DragFinishEvent({ endZone, dragged }));
 }
 
@@ -187,6 +199,8 @@ function zoneDragEnd(e) {
  */
 function zoneDragOver(e) {
   e.preventDefault();
+
+  if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
 
   /**@type {HTMLElement | null} */
   const dragged = document.querySelector("[draggable][data-dragged='true']");
@@ -206,16 +220,24 @@ function zoneDragOver(e) {
 
   if (closest == null) {
     if (dragged == toZone.lastElementChild) return;
+    const meta = (toZone[draggableBrand] ||= {});
+    if (meta.lastClosest === closest && meta.lastFrom === fromZone) return;
+    meta.lastClosest = closest;
+    meta.lastFrom = fromZone;
     toZone.dispatchEvent(new DragEnterEvent({ closest, dragged, fromZone, toZone }));
   } else {
     let next_siblings = toZone.querySelectorAll("[data-dragged='true'] ~ *");
     if (next_siblings[0] == closest) return;
+    const meta = (toZone[draggableBrand] ||= {});
+    if (meta.lastClosest === closest && meta.lastFrom === fromZone) return;
+    meta.lastClosest = closest;
+    meta.lastFrom = fromZone;
     toZone.dispatchEvent(new DragEnterEvent({ closest, dragged, fromZone, toZone }));
   }
 }
 
 /**
- * Sets target as a dragzone, draggable elements inside the zone will trigger DraggableStart,DraggableEneter,DraggableFinish events
+ * Sets target as a dragzone, draggable elements inside the zone will trigger DraggableStart,DraggableEnter,DraggableFinish events
  * @template {DraggableElement} T
  * @param {T} target
  * @returns {[T,()=>void] | [T,undefined]} cleanup function, removes the zone

@@ -1,6 +1,17 @@
 # Draggable
 
-Is a library that exports a `draggable` and `dragZone` function. The library does not implement any logic to manipulate the DOM, instead the drag zones emit event when draggable elements is dragged. The emitted `DragStartEvent`, `DragEnterEvent`, `DragFinishEvent` contains the relevant DOM elements to implement a drag & drop program.
+A tiny library that exports `draggable` and `dragZone`. It does not manipulate the DOM for you; instead, drag zones emit events when draggable elements are dragged. The emitted `DragStartEvent`, `DragEnterEvent`, and `DragFinishEvent` contain the relevant DOM elements to implement drag & drop behavior.
+
+## Install
+
+```bash
+npm install @mkja/draggable
+```
+
+## Notes
+
+- Custom events bubble and are composed (cross Shadow DOM boundaries).
+- DataTransfer is set for cross‑browser compatibility (e.g., Firefox).
 
 ```javascript
 import {
@@ -56,7 +67,7 @@ function finishHandler(e) {
   console.log("\n");
 }
 
-//dragZone returns targed element and a cleanup function to remove listeners
+// dragZone returns target element and a cleanup function to remove listeners
 let [zone0, cleanUp0] = dragZone(document.createElement("ul"));
 let [zone1, cleanUp1] = dragZone(document.createElement("ul"));
 
