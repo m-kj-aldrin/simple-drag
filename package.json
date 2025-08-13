@@ -2,7 +2,7 @@
   "license": "ISC",
   "author": "mkja",
   "name": "@mkja/draggable",
-  "version": "0.0.13",
+  "version": "0.0.14",
   "description": "",
   "main": "dist/index.js",
   "types": "types/entry.d.ts",
